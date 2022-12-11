@@ -1,4 +1,4 @@
-module github.com/schaermu/docker-magic-dashboard
+module github.com/schaermu/wonderboard
 
 go 1.19
 

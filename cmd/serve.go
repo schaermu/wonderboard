@@ -1,6 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -10,22 +7,21 @@ import (
 	"github.com/gookit/slog"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/schaermu/docker-magic-dashboard/internal/docker"
+	"github.com/schaermu/wonderboard/internal/docker"
 	"github.com/spf13/cobra"
 )
 
 var wg *sync.WaitGroup
 
-// serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Starts the application on port WB_PORT or 3000",
+	Long: `This command starts both the data harvester using the Docker and Traefik API's.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+You can configure the behaviour using the following environment variables:
+- WB_BASE_URL = http://<YOUR_HOMELAB_IP_OR_HOSTNAME>
+- WB_TRAEFIK_API = http://<YOUR_TRAFIK_SERVICENAME>
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		harvester := docker.New(
 			docker.WithInterval(5*time.Second),
@@ -61,14 +57,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

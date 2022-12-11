@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gookit/slog"
-	"github.com/schaermu/docker-magic-dashboard/cmd"
+	"github.com/schaermu/wonderboard/cmd"
 )
 
 func main() {
