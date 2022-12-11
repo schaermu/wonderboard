@@ -12,7 +12,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "docker-magic-dashboard",
+	Use:   "wonderboard",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -47,9 +47,6 @@ func initConfig() {
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
-		viper.SetEnvPrefix("DMDB")
-		viper.AutomaticEnv()
-
 		// Search config in home directory with name "config.yml" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
@@ -57,6 +54,10 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
+
+	viper.SetDefault("BASE_URL", "http://localhost")
+	viper.SetDefault("TRAEFIK_API_URL", "http://localhost:8080")
+	viper.SetDefault("PORT", "3000")
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

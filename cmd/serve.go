@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -9,24 +10,25 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/schaermu/wonderboard/internal/docker"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var wg *sync.WaitGroup
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Starts the application on port WB_PORT or 3000",
+	Short: "Starts the application on port PORT or 3000",
 	Long: `This command starts both the data harvester using the Docker and Traefik API's.
 
 You can configure the behaviour using the following environment variables:
-- WB_BASE_URL = http://<YOUR_HOMELAB_IP_OR_HOSTNAME>
-- WB_TRAEFIK_API = http://<YOUR_TRAFIK_SERVICENAME>
+- BASE_URL = http://<YOUR_HOMELAB_IP_OR_HOSTNAME>
+- TRAEFIK_API_URL = http://<YOUR_TRAFIK_SERVICENAME>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		harvester := docker.New(
 			docker.WithInterval(5*time.Second),
-			docker.WithBaseUrl("http://localhost"),
-			docker.WithTraefikApi("http://localhost:8080"),
+			docker.WithBaseUrl(viper.GetString("BASE_URL")),
+			docker.WithTraefikApi(viper.GetString("TRAEFIK_API_URL")),
 		)
 
 		if err := harvester.Start(); err != nil {
@@ -51,7 +53,7 @@ You can configure the behaviour using the following environment variables:
 			return c.JSON(200, harvester.GetCurrentContainers())
 		})
 
-		slog.Fatal(e.Start(":3000"))
+		slog.Fatal(e.Start(fmt.Sprintf(":%v", viper.GetString("PORT"))))
 	},
 }
 
