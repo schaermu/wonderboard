@@ -1,0 +1,93 @@
+version: 2.1
+workflows:
+  main:
+    jobs:
+      - build-svelte
+      - build-go
+      - release:
+          context:
+            - github-release
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+jobs:
+  build-svelte:
+    working_directory: ~/repo/ui
+    docker:
+      - image: circleci/node:18.12
+    steps:
+      - checkout:
+          path: ~/repo
+      - run:
+          name: Update NPM
+          command: "sudo npm install -g npm@8"
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - save_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Run tests
+          command: npm run test:ci
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+      - run:
+          name: Upload coverage to Codecov
+          command: bash <(curl -s https://codecov.io/bash)
+      - store_test_results:
+          path: ./reports/junit/
+      - store_artifacts:
+          path: ./reports/junit
+  build-go:
+    docker:
+      - image: circleci/golang:1.19
+    environment:
+      TEST_RESULTS: /tmp/test-results
+    steps:
+      - checkout
+      - run: mkdir -p $TEST_RESULTS
+      - restore_cache:
+          name: Restore Go module cache
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: Install Dependencies
+          command: go mod download
+      - save_cache:
+          name: Save Go module cache
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Run tests
+          command: |
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -tags=test -coverprofile=coverage.txt  -race -covermode=atomic ./...
+      - run:
+          name: Upload coverage to Codecov
+          command: bash <(curl -s https://codecov.io/bash)
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: raw-test-output
+      - store_test_results:
+          path: /tmp/test-results
+  release:
+    docker:
+      - image: circleci/golang:1.17
+    steps:
+      - checkout      
+      - setup_remote_docker:
+          version: 20.10.2
+      - run: echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
+      - run:
+          name: Build and publish docker image
+          command: |
+            docker build -t ghcr.io/schaermu/wonderboard:latest -t ghcr.io/schaermu/wonderboard:${CIRCLE_TAG} .
+            docker push ghcr.io/schaermu/wonderboard:latest
+            docker push ghcr.io/schaermu/wonderboard:${CIRCLE_TAG}
