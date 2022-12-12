@@ -47,7 +47,7 @@ jobs:
           path: ./reports/junit
   build-go:
     docker:
-      - image: cimg/golang:1.19
+      - image: cimg/go:1.19.4
     environment:
       TEST_RESULTS: /tmp/test-results
     steps:
