@@ -17,7 +17,7 @@ jobs:
   build-svelte:
     working_directory: ~/repo/ui
     docker:
-      - image: circleci/node:18.12
+      - image: cimg/node:18.12
     steps:
       - checkout:
           path: ~/repo
@@ -47,7 +47,7 @@ jobs:
           path: ./reports/junit
   build-go:
     docker:
-      - image: circleci/golang:1.19
+      - image: cimg/golang:1.19
     environment:
       TEST_RESULTS: /tmp/test-results
     steps:
