@@ -1,0 +1,22 @@
+{
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      "^.+\\.ts$": "ts-jest",
+      "^.+\\.svelte$": ["svelte-jester", { "preprocess": true }],
+      ".+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2|svg)$": "jest-transform-stub"
+    },
+    "moduleFileExtensions": [
+      "svelte",
+      "js",
+      "ts"
+    ],
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-dom/extend-expect"
+    ],
+    "automock": false,
+    "resetMocks": false,
+    "setupFiles": [
+      "./setup.jest.js"
+    ]
+  }

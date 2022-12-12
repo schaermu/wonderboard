@@ -166,7 +166,10 @@ running:
 }
 
 func (h *harvester) getTargetUrl(container *types.Container) (string, error) {
-	if val, ok := container.Labels["traefik.enable"]; ok {
+	// if the target url is configured directly, simply return it
+	if val, ok := container.Labels["wonderboard.target.url"]; ok {
+		return val, nil
+	} else if val, ok := container.Labels["traefik.enable"]; ok {
 		if enabled, err := strconv.ParseBool(val); err == nil && enabled {
 			// traefik-routed container, search explicit hostname
 			for _, v := range container.Labels {
@@ -175,7 +178,7 @@ func (h *harvester) getTargetUrl(container *types.Container) (string, error) {
 				}
 			}
 
-			// no explicit hostname found, query traefik api
+			// no explicit hostname found, query traefik api if available
 			var traefikHost string
 			if h.traefikApiClient != nil {
 				var result TraefikRouterResponse
@@ -208,9 +211,9 @@ func (h *harvester) getTargetUrl(container *types.Container) (string, error) {
 		return fmt.Sprintf("http://%v:%v", h.baseUrl, port), nil
 	} else {
 		// cannot determine target url implicitly, check for explicit label
-		if port, ok := container.Labels["dashboard.target.port"]; ok {
+		if port, ok := container.Labels["wonderboard.target.port"]; ok {
 			return fmt.Sprintf("http://%v:%v", h.baseUrl, port), nil
 		}
 	}
-	return "", fmt.Errorf("could not determine target host, configure using label dashboard.target.port")
+	return "", fmt.Errorf("could not determine target host, configure using label wonderboard.target.url or wonderboard.target.port")
 }
