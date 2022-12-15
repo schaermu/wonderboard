@@ -102,15 +102,15 @@ func (h *harvester) fetchCurrentData() {
 	defer h.mu.Unlock()
 
 syncloop:
-	for idx, curr := range h.current {
+	for idx := len(h.current) - 1; idx >= 0; idx-- {
 		for _, running := range running {
-			if curr.ID == running.ID {
+			if h.current[idx].ID == running.ID {
 				break syncloop
 			}
 		}
 
 		// container at idx not running, remove
-		slog.Infof("detected stale container id %v", curr.ID)
+		slog.Infof("detected stale container id %v", h.current[idx].ID)
 
 		h.current = append(h.current[:idx], h.current[idx+1:]...)
 	}
