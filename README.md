@@ -26,5 +26,7 @@ If you want to have a seamless development experience, i recommend you install [
 1) Change directory to `ui`.
 2) Run `npm install`.
 3) Run `npm run dev`.
-4) *(optional)* Install `air` by running `go install github.com/cosmtrek/air@latest`.
+3.1) *(optional)* Install `air` by running `go install github.com/cosmtrek/air@latest`.
 4) In a new shell, run either `air` or `make run` within the root directory.
+
+In case you have no docker containers running, you can boot up a small test stack using `docker compose -f testing/docker-compose.yml up -d`.

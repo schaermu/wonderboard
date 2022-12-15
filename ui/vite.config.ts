@@ -6,5 +6,10 @@ export default defineConfig({
   build: {
     emptyOutDir: false
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000/api'
+    }
+  },
   plugins: [svelte()],
 })
