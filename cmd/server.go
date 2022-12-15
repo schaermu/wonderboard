@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/schaermu/wonderboard/internal/docker"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/slices"
 )
 
 type Server struct {
@@ -16,7 +18,16 @@ type Server struct {
 }
 
 type ContainerResponse struct {
-	Current []docker.DockerInfo `json:"current"`
+	Items []docker.DockerInfo `json:"items"`
+}
+
+type ContainerGroup struct {
+	Name  string              `json:"name"`
+	Items []docker.DockerInfo `json:"items"`
+}
+
+type ContainerGroupedResponse struct {
+	Groups []ContainerGroup `json:"groups"`
 }
 
 func NewServer(embedFS http.FileSystem) (server *Server, err error) {
@@ -54,7 +65,30 @@ func NewServer(embedFS http.FileSystem) (server *Server, err error) {
 	// routes
 	e.File("/", "public/index.html")
 	e.GET("/api/current", func(c echo.Context) error {
-		return c.JSON(200, ContainerResponse{Current: harvester.GetCurrentContainers()})
+		return c.JSON(200, ContainerResponse{Items: harvester.GetCurrentContainers()})
+	})
+
+	e.GET("/api/grouped", func(c echo.Context) error {
+		groupParam := c.QueryParams().Get("by")
+		if len(groupParam) > 0 {
+			output := make([]ContainerGroup, 0)
+			current := harvester.GetCurrentContainers()
+			switch groupParam {
+			case "project":
+				for _, v := range current {
+					idx := slices.IndexFunc(output, func(c ContainerGroup) bool { return c.Name == v.Project })
+					if idx > -1 {
+						output[idx].Items = append(output[idx].Items, v)
+					} else {
+						output = append(output, ContainerGroup{Name: v.Project, Items: []docker.DockerInfo{v}})
+					}
+				}
+			}
+
+			return c.JSON(200, ContainerGroupedResponse{Groups: output})
+		} else {
+			return c.JSON(400, errors.New("please supply by argument"))
+		}
 	})
 
 	return &Server{
