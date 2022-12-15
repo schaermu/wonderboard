@@ -25,7 +25,7 @@ type harvester struct {
 	ticker           *time.Ticker
 	docker           *client.Client
 	interval         time.Duration
-	baseUrl          string
+	baseURL          string
 	traefikApiClient *resty.Client
 }
 
@@ -63,7 +63,7 @@ func WithInterval(interval time.Duration) func(*harvester) {
 
 func WithBaseUrl(baseUrl string) func(*harvester) {
 	return func(h *harvester) {
-		h.baseUrl = baseUrl
+		h.baseURL = baseUrl
 	}
 }
 
@@ -156,10 +156,6 @@ running:
 			record.Service = service
 		}
 
-		if version, ok := container.Labels["com.docker.compose.version"]; ok {
-			record.Version = version
-		}
-
 		slog.Infof("added new container %v", record.Name)
 		h.current = append(h.current, record)
 	}
@@ -208,11 +204,11 @@ func (h *harvester) getTargetUrl(container *types.Container) (string, error) {
 		if port == 0 {
 			port = container.Ports[0].PrivatePort
 		}
-		return fmt.Sprintf("http://%v:%v", h.baseUrl, port), nil
+		return fmt.Sprintf("http://%v:%v", h.baseURL, port), nil
 	} else {
 		// cannot determine target url implicitly, check for explicit label
 		if port, ok := container.Labels["wonderboard.target.port"]; ok {
-			return fmt.Sprintf("http://%v:%v", h.baseUrl, port), nil
+			return fmt.Sprintf("http://%v:%v", h.baseURL, port), nil
 		}
 	}
 	return "", fmt.Errorf("could not determine target host, configure using label wonderboard.target.url or wonderboard.target.port")

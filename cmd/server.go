@@ -15,6 +15,10 @@ type Server struct {
 	Http *echo.Echo
 }
 
+type ContainerResponse struct {
+	Current []docker.DockerInfo `json:"current"`
+}
+
 func NewServer(embedFS http.FileSystem) (server *Server, err error) {
 	harvester := docker.New(
 		docker.WithInterval(5*time.Second),
@@ -50,7 +54,7 @@ func NewServer(embedFS http.FileSystem) (server *Server, err error) {
 	// routes
 	e.File("/", "public/index.html")
 	e.GET("/api/current", func(c echo.Context) error {
-		return c.JSON(200, harvester.GetCurrentContainers())
+		return c.JSON(200, ContainerResponse{Current: harvester.GetCurrentContainers()})
 	})
 
 	return &Server{

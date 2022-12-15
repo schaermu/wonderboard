@@ -5,7 +5,6 @@ type DockerInfo struct {
 	Name      string `json:"name"`
 	Image     string `json:"image"`
 	Service   string `json:"service"`
-	Version   string `json:"version"`
 	Project   string `json:"project"`
 	TargetUrl string `json:"targetUrl"`
 }
