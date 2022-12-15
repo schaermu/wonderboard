@@ -2,6 +2,8 @@ BINARY_NAME=wonderboard
 GOCOVER=go tool cover
 
 build:
+	GOARCH=amd64 GOOS=linux go build -o ./build/${BINARY_NAME} .
+build-all:
 	npm run --prefix ui build
 	GOARCH=amd64 GOOS=linux go build -o ./build/${BINARY_NAME} .
 
@@ -9,12 +11,12 @@ run:
 	./build/${BINARY_NAME} serve
 
 start: clean build run
+start-all: clean build-all run
 
 clean:
 	go clean
 	go clean -testcache
 	rm -rf ./build
-	rm -rf ./ui/dist
 
 test: test-go test-svelte
 
