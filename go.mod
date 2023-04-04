@@ -3,7 +3,7 @@ module github.com/schaermu/wonderboard
 go 1.20
 
 require (
-	github.com/docker/docker v20.10.21+incompatible
+	github.com/docker/docker v20.10.24+incompatible
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/gookit/slog v0.3.4
 	github.com/labstack/echo/v4 v4.9.1
